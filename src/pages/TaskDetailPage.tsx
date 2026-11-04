@@ -25,10 +25,15 @@ import {
   useGetTaskFieldHistoryQuery,
   useGetTaskQuery,
   useGetTaskStatusHistoryQuery,
+  useGetExecutorsQuery,
+  useGetProfilesQuery,
+  useGetSitesQuery,
   useTransitionTaskMutation,
 } from '@/features/api/supabaseApi'
 import { getAvailableTaskActions } from '@/features/tasks/taskActions'
+import { formatFieldHistoryValue } from '@/lib/formatFieldHistory'
 import { getRtkErrorMessage } from '@/lib/rtkError'
+import type { Profile, Site } from '@/types/crm'
 import { TASK_STATUS_LABELS, type TimelineEvent } from '@/types/crm'
 
 export function TaskDetailPage() {
@@ -45,6 +50,34 @@ export function TaskDetailPage() {
   const { data: fieldHistory } = useGetTaskFieldHistoryQuery(taskId, {
     skip: !taskId,
   })
+  const isPlanner = profile?.role === 'planner'
+  const { data: allProfiles } = useGetProfilesQuery(undefined, {
+    skip: !isPlanner,
+  })
+  const { data: executors } = useGetExecutorsQuery()
+  const { data: sites } = useGetSitesQuery(undefined, { skip: !isPlanner })
+
+  const profileById = useMemo(() => {
+    const map = new Map<string, Profile>()
+    for (const p of [...(allProfiles ?? []), ...(executors ?? [])]) {
+      map.set(p.id, p)
+    }
+    if (task?.assignee) map.set(task.assignee.id, task.assignee)
+    if (task?.author) map.set(task.author.id, task.author)
+    return map
+  }, [allProfiles, executors, task])
+
+  const siteById = useMemo(() => {
+    const map = new Map<string, Site>()
+    for (const s of sites ?? []) map.set(s.id, s)
+    if (task?.site) map.set(task.site.id, task.site)
+    return map
+  }, [sites, task])
+
+  const fieldHistoryCtx = useMemo(
+    () => ({ profiles: profileById, sites: siteById }),
+    [profileById, siteById],
+  )
 
   const [transitionTask, { isLoading: transitioning }] =
     useTransitionTaskMutation()
@@ -72,14 +105,14 @@ export function TaskDetailPage() {
       created_at: h.created_at,
       actor_id: h.actor_id,
       field_name: h.field_name,
-      old_value: h.old_value,
-      new_value: h.new_value,
+      old_value: formatFieldHistoryValue(h.field_name, h.old_value, fieldHistoryCtx),
+      new_value: formatFieldHistoryValue(h.field_name, h.new_value, fieldHistoryCtx),
     }))
     return [...statusEvents, ...fieldEvents].sort(
       (a, b) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     )
-  }, [statusHistory, fieldHistory])
+  }, [statusHistory, fieldHistory, fieldHistoryCtx])
 
   const actions =
     task && profile

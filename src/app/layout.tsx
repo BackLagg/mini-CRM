@@ -6,8 +6,6 @@ import {
   Button,
   Container,
   IconButton,
-  MenuItem,
-  Select,
   Toolbar,
   Typography,
 } from '@mui/material'
@@ -18,12 +16,11 @@ import LogoutIcon from '@mui/icons-material/Logout'
 
 import { useAppSelector } from '@/app/hooks'
 import { supabase } from '@/lib/supabaseClient'
-import { PRESET_LABELS, type ThemePreset } from '@/theme/theme'
 import { useThemeMode } from '@/theme/ThemeModeProvider'
 
 export function AppLayout() {
   const profile = useAppSelector((s) => s.auth.profile)
-  const { mode, preset, toggleMode, setPreset } = useThemeMode()
+  const { mode, toggleMode } = useThemeMode()
   const location = useLocation()
 
   const handleLogout = async () => {
@@ -56,22 +53,6 @@ export function AppLayout() {
               Мои задачи
             </Button>
           )}
-          <Select
-            size="small"
-            value={preset}
-            onChange={(e) => setPreset(e.target.value as ThemePreset)}
-            sx={{
-              color: 'inherit',
-              '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' },
-              minWidth: 120,
-            }}
-          >
-            {(Object.keys(PRESET_LABELS) as ThemePreset[]).map((p) => (
-              <MenuItem key={p} value={p}>
-                {PRESET_LABELS[p]}
-              </MenuItem>
-            ))}
-          </Select>
           <IconButton color="inherit" onClick={toggleMode} aria-label="Тема">
             {mode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
           </IconButton>
