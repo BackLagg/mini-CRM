@@ -1,11 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit'
 
-import counterReducer from '@/features/counter/counterSlice'
+import { supabaseApi } from '@/features/api/supabaseApi'
+import authReducer from '@/features/auth/authSlice'
 
 export const store = configureStore({
   reducer: {
-    counter: counterReducer,
+    auth: authReducer,
+    [supabaseApi.reducerPath]: supabaseApi.reducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(supabaseApi.middleware),
 })
 
 export type RootState = ReturnType<typeof store.getState>

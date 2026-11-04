@@ -1,32 +1,59 @@
-# React + TypeScript + Vite
+# Мини-CRM «Объекты и задачи»
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + TypeScript + Supabase. Тестовое задание: объекты (стройки), задачи, роли постановщик/исполнитель, RLS в Postgres.
 
-Currently, two official plugins are available:
+## Быстрый старт
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+cp .env.example .env   # заполните ключи Supabase
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Переменные окружения:
+
+| Переменная | Описание |
+|------------|----------|
+| `VITE_SUPABASE_URL` | URL проекта Supabase |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Anon / publishable key (только фронт) |
+
+`DB_PASS` — только для Supabase CLI локально, **не** добавляйте в Vercel и не коммитьте.
+
+## База данных
+
+SQL-миграции: [supabase/migrations/](supabase/migrations/) — применить по порядку в SQL Editor или через `supabase db push`.
+
+Инструкция по пользователям и demo-данным: [supabase/README.md](supabase/README.md).
+
+## Скрипты
+
+| Команда | Назначение |
+|---------|------------|
+| `npm run dev` | Локальная разработка |
+| `npm run build` | Production-сборка |
+| `npm run preview` | Просмотр сборки |
+| `npm run lint` | Oxlint |
+
+## Деплой (Vercel)
+
+1. Импортируйте репозиторий в Vercel.
+2. Framework: Vite, build: `npm run build`, output: `dist`.
+3. Environment: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
+4. [vercel.json](vercel.json) настроен для SPA (rewrite на `index.html`).
+
+## Маршруты
+
+- `/login` — вход
+- `/objects` — список объектов
+- `/objects/:siteId` — объект и задачи
+- `/tasks/:taskId` — карточка задачи и история
+- `/my-tasks` — задачи исполнителя
+
+## Документация для сдачи
+
+- [docs/EXPLANATION.md](docs/EXPLANATION.md) — объяснение для руководителя
+- [docs/DECISIONS.md](docs/DECISIONS.md) — решения и допущения
+
+## Тестовые аккаунты
+
+Создайте в Supabase (см. supabase/README). Логины и пароли передавайте проверяющим **вне** git.
